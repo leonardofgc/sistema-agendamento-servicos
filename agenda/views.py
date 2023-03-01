@@ -6,11 +6,25 @@ from django.http import JsonResponse
 from rest_framework.decorators import api_view
 
 # Create your views here.
-@api_view(http_method_names=["GET"])
+@api_view(http_method_names=["GET", "PATCH"])
 def agendamento_detalhes(request, id):
-    agendamento = get_object_or_404(Agendamento, id=id)
-    serializer = AgendamentoSerializer(agendamento)
-    return JsonResponse(serializer.data)
+    if request.method == "GET":
+        agendamento = get_object_or_404(Agendamento, id=id)
+        serializer = AgendamentoSerializer(agendamento)
+        return JsonResponse(serializer.data)
+    
+    if request.method == "PATCH":
+        agendamento = get_object_or_404(Agendamento, id=id)
+        serializer = AgendamentoSerializer(data=request.data, partial=True)
+        if serializer.is_valid():
+            validated_data = serializer.validated_data
+            agendamento.data_horario = validated_data.get("data_horario", agendamento.data_horario)
+            agendamento.nome_cliente = validated_data.get("nome_cliente",agendamento.nome_cliente)
+            agendamento.email_cliente = validated_data.get("email_cliente", agendamento.email_cliente)
+            agendamento.telefone_cliente = validated_data.get("telefone_cliente", agendamento.telefone_cliente)
+            agendamento.save()
+            return JsonResponse(validated_data, status=200)
+        return JsonResponse(serializer.erros, status=400)
 
 
 @api_view(http_method_names=["GET", "POST"])

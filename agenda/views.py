@@ -4,6 +4,7 @@ from agenda.serializers import AgendamentoSerializer
 from django.http import JsonResponse
 
 from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 # Create your views here.
 @api_view(http_method_names=["GET", "PATCH"])
@@ -46,4 +47,11 @@ def agendamento_lista(request):
             )
             return JsonResponse(serizalizer.data, status=201)
         return JsonResponse(serizalizer.errors, status=400)
+
+@api_view(http_method_names=["DELETE"])
+def agendamento_deletar(request, id):
+    if request.method == "DELETE":
+        agendamento = get_object_or_404(Agendamento, id=id)
+        agendamento.delete()
+        return Response(status=204)
     

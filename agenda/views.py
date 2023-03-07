@@ -31,7 +31,8 @@ def agendamento_detalhes(request, id):
 @api_view(http_method_names=["GET", "POST"])
 def agendamento_lista(request):
     if request.method == "GET":
-        qs = Agendamento.objects.all()
+        #qs = Agendamento.objects.all()
+        qs = Agendamento.objects.filter().exclude(cancelado=True)
         serizalizer = AgendamentoSerializer(qs, many=True)
         return JsonResponse(serizalizer.data, safe=False)
     if request.method == "POST":
@@ -54,4 +55,12 @@ def agendamento_deletar(request, id):
         agendamento = get_object_or_404(Agendamento, id=id)
         agendamento.delete()
         return Response(status=204)
+
+@api_view(http_method_names=["PATCH"])
+def agendamento_cancelar(request, id):
+    if request.method == "PATCH":
+        agendamento = get_object_or_404(Agendamento, id=id)
+        agendamento.cancelado = True
+        agendamento.save()
+    return Response(status=204)
     

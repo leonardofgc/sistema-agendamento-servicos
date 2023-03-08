@@ -9,22 +9,16 @@ from rest_framework.response import Response
 # Create your views here.
 @api_view(http_method_names=["GET", "PATCH"])
 def agendamento_detalhes(request, id):
+    agendamento = get_object_or_404(Agendamento, id=id)
     if request.method == "GET":
-        agendamento = get_object_or_404(Agendamento, id=id)
         serializer = AgendamentoSerializer(agendamento)
         return JsonResponse(serializer.data)
     
     if request.method == "PATCH":
-        agendamento = get_object_or_404(Agendamento, id=id)
-        serializer = AgendamentoSerializer(data=request.data, partial=True)
+        serializer = AgendamentoSerializer(agendamento, data=request.data, partial=True)
         if serializer.is_valid():
-            validated_data = serializer.validated_data
-            agendamento.data_horario = validated_data.get("data_horario", agendamento.data_horario)
-            agendamento.nome_cliente = validated_data.get("nome_cliente",agendamento.nome_cliente)
-            agendamento.email_cliente = validated_data.get("email_cliente", agendamento.email_cliente)
-            agendamento.telefone_cliente = validated_data.get("telefone_cliente", agendamento.telefone_cliente)
-            agendamento.save()
-            return JsonResponse(validated_data, status=200)
+            serializer.save()
+            return JsonResponse(serializer.data, status=200)
         return JsonResponse(serializer.erros, status=400)
 
 
@@ -39,13 +33,7 @@ def agendamento_lista(request):
         data = request.data
         serizalizer = AgendamentoSerializer(data=data)
         if serizalizer.is_valid():
-            validated_data = serizalizer.validated_data
-            Agendamento.objects.create(
-                data_horario = validated_data["data_horario"],
-                nome_cliente = validated_data["nome_cliente"],
-                email_cliente = validated_data["email_cliente"],
-                telefone_cliente = validated_data["telefone_cliente"]
-            )
+            serizalizer.save()
             return JsonResponse(serizalizer.data, status=201)
         return JsonResponse(serizalizer.errors, status=400)
 
